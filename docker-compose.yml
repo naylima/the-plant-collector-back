@@ -1,0 +1,26 @@
+version: "3"
+services:
+  plantshop_db:
+    image: postgres:13
+    container_name: plantshop_db
+    restart: always
+    ports:
+      - 2345:5432
+    env_file:
+      - .env.development
+    volumes: 
+      - postgres:/var/lib/postgresql/data
+
+  app:
+    container_name: app
+    build: . 
+    ports:
+      - 5000:4000
+    depends_on:
+      - plantshop_db 
+    env_file:
+      - .env.development
+    volumes: 
+      - .:/apps
+volumes:
+  postgres:

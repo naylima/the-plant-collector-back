@@ -1,0 +1,170 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String   @unique @db.VarChar(255)
+  email      String   @unique @db.VarChar(255)
+  password   String?  @db.VarChar(255)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  session    Session[]
+  enrollment Enrollment?
+  Cart       Cart[]
+
+  @@map("users")
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  user_id    String
+  token      String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@unique([token])
+  @@map("sessions")
+}
+
+model Enrollment {
+  id         String   @id @default(uuid())
+  full_name  String   @db.VarChar(255)
+  cpf        String   @db.VarChar(255)
+  birthday   DateTime
+  phone      String   @db.VarChar(255)
+  user_id    String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  address Address?
+
+  user    User      @relation(fields: [user_id], references: [id])
+  Payment Payment[]
+
+  @@map("enrollments")
+}
+
+model Address {
+  id            String   @id @default(uuid())
+  cep           String   @db.VarChar(255)
+  street        String   @db.VarChar(255)
+  city          String   @db.VarChar(255)
+  state         String   @db.VarChar(255)
+  number        String   @db.VarChar(255)
+  neighborhood  String   @db.VarChar(255)
+  addressDetail String?  @db.VarChar(255)
+  enrollment_id String   @unique
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  enrollment Enrollment @relation(fields: [enrollment_id], references: [id])
+
+  @@map("address")
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String @unique @db.VarChar(255)
+
+  type Type[]
+
+  @@map("categories")
+}
+
+model Type {
+  id          String @id @default(uuid())
+  name        String @unique @db.VarChar(255)
+  category_id String
+
+  productTypes ProductType[]
+
+  category Category @relation(fields: [category_id], references: [id])
+
+  @@map("types")
+}
+
+model Product {
+  id          String @id @default(uuid())
+  name        String @unique @db.VarChar(255)
+  description String @db.VarChar(500)
+  image       String
+  price       Int
+  stock       Int
+
+  productTypes ProductType[]
+  cartProducts CartProduct[]
+
+  @@map("products")
+}
+
+model ProductType {
+  id         String @id @default(uuid())
+  product_id String
+  type_id    String
+
+  product Product @relation(fields: [product_id], references: [id])
+  type    Type    @relation(fields: [type_id], references: [id])
+
+  @@unique([product_id, type_id])
+  @@map("product_types")
+}
+
+model Cart {
+  id         String   @id @default(uuid())
+  user_id    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  status PaymentStatus
+
+  payment      Payment[]
+  cartProducts CartProduct[]
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("carts")
+}
+
+model CartProduct {
+  id         String @id @default(uuid())
+  cart_id    String
+  product_id String
+  amount     Int
+
+  cart    Cart    @relation(fields: [cart_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("cart_products")
+}
+
+model Payment {
+  id               String   @id @default(uuid())
+  value            Int
+  card_issuer      String
+  card_last_digits String
+  cart_id          String
+  enrollment_id    String
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  cart       Cart       @relation(fields: [cart_id], references: [id])
+  enrollment Enrollment @relation(fields: [enrollment_id], references: [id])
+
+  @@unique([cart_id])
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  RESERVED
+  PAID
+}

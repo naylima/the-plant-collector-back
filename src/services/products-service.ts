@@ -11,8 +11,15 @@ async function getProductsByType(type_id: string) {
   return products;
 }
 
+async function getProductsByName(keyword: string) {
+  const products = await productsRepository.findByName(keyword);
+  
+  return products;
+}
+
 const productsService = {
-  getProductsByType
+  getProductsByType,
+  getProductsByName
 };
 
 export default productsService;

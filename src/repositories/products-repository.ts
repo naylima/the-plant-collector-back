@@ -19,9 +19,20 @@ async function findByType(type_id: string) {
   });
 }
 
+async function findByName(keyword: string) {
+  return prisma.product.findMany({
+    where: {
+      name: {
+        contains: keyword
+      }
+    }
+  })
+}
+
 const productsRepository = {
   findById,
-  findByType
+  findByType,
+  findByName
 };
 
 export default productsRepository;

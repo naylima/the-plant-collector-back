@@ -22,6 +22,9 @@ export async function getProducts(req: Request, res: Response) {
     
       return res.status(httpStatus.OK).send(products);
     }
+    const products = await productsService.getProductsBySell();
+   
+    return res.status(httpStatus.OK).send(products);
   } catch (error) {
     return res.sendStatus(httpStatus.NOT_FOUND);
   }

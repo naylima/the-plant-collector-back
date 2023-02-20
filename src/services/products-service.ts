@@ -17,9 +17,17 @@ async function getProductsByName(keyword: string) {
   return products;
 }
 
+async function getProductsBySell() {
+  const products = await productsRepository.findMany();
+  
+  return products;
+}
+
+
 const productsService = {
   getProductsByType,
-  getProductsByName
+  getProductsByName,
+  getProductsBySell
 };
 
 export default productsService;
